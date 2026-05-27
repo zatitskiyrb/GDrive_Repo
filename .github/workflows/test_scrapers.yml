@@ -1,14 +1,11 @@
 name: Test Scrapers (cloud IP check)
 
 on:
-  workflow_dispatch:  # ручной запуск из GitHub UI
+  workflow_dispatch:
 
 jobs:
   test:
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: "Practice 4 (HR scraper)/hr_scraper"
 
     steps:
       - uses: actions/checkout@v4
@@ -22,7 +19,7 @@ jobs:
 
       - name: Test Indeed
         run: |
-          python - <<'EOF'
+          python - <<'PYEOF'
           from jobspy import scrape_jobs
           df = scrape_jobs(
               site_name=["indeed"],
@@ -39,11 +36,11 @@ jobs:
               print(f"Indeed: {len(df)} results")
               for _, r in df.iterrows():
                   print(f"  [{r['title']}] @ {r['company']} | desc: {len(str(r.get('description') or ''))} chars")
-          EOF
+          PYEOF
 
       - name: Test LinkedIn
         run: |
-          python - <<'EOF'
+          python - <<'PYEOF'
           from jobspy import scrape_jobs
           df = scrape_jobs(
               site_name=["linkedin"],
@@ -59,13 +56,13 @@ jobs:
               print(f"LinkedIn: {len(df)} results")
               for _, r in df.iterrows():
                   print(f"  [{r['title']}] @ {r['company']}")
-          EOF
+          PYEOF
 
       - name: Test Greenhouse (Anthropic)
         run: |
-          python - <<'EOF'
+          python - <<'PYEOF'
           import httpx
           resp = httpx.get("https://boards-api.greenhouse.io/v1/boards/anthropic/jobs", timeout=10)
           jobs = resp.json().get("jobs", [])
           print(f"Greenhouse (anthropic): {len(jobs)} total jobs")
-          EOF
+          PYEOF
