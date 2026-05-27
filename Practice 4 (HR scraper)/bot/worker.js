@@ -4,8 +4,7 @@
  * Environment variables (Cloudflare dashboard → Workers → Settings → Variables):
  *   TELEGRAM_TOKEN   — bot token from @BotFather
  *   GITHUB_TOKEN     — GitHub Personal Access Token (repo scope)
- *   GITHUB_REPO      — e.g. "zatitskiyrb/GDrive_Repo"
- *   ALLOWED_CHAT_ID  — your Telegram chat ID (bot ignores everyone else)
+ *   GITHUB_REPO      — e.g. "zatitskiyrb/GDrive_Repo"  (also set in wrangler.toml [vars])
  */
 
 const LOCATION_KEYBOARD = {
@@ -43,11 +42,6 @@ export default {
       const chatId = String(cb.message.chat.id);
       const data = cb.data || "";
 
-      if (env.ALLOWED_CHAT_ID && chatId !== env.ALLOWED_CHAT_ID) {
-        await answerCallback(env, cb.id);
-        return new Response("OK");
-      }
-
       if (data.startsWith("loc:")) {
         const location = data.replace("loc:", "");
         await answerCallback(env, cb.id, `Запускаю: ${location}`);
@@ -68,10 +62,6 @@ export default {
 
     const chatId = String(message.chat.id);
     const text = (message.text || "").trim();
-
-    if (env.ALLOWED_CHAT_ID && chatId !== env.ALLOWED_CHAT_ID) {
-      return new Response("OK");
-    }
 
     const COMMAND_LOCATIONS = {
       "/run_europe":         "Europe",
