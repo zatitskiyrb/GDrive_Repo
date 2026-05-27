@@ -13,6 +13,13 @@ sys.path.insert(0, str(Path(__file__).parent))
 load_dotenv(override=True)
 
 
+LOCATION_PRESETS: dict[str, list[str]] = {
+    "Baltic":         ["Estonia", "Latvia", "Lithuania"],
+    "Scandinavia":    ["Sweden", "Norway", "Denmark", "Finland", "Iceland"],
+    "Eastern Europe": ["Poland", "Czech Republic", "Slovakia", "Hungary", "Romania", "Bulgaria"],
+}
+
+
 def run() -> None:
     config = _load_config()
 
@@ -71,25 +78,32 @@ def run() -> None:
     location = os.getenv("SEARCH_LOCATION") or search_cfg["location"]
     days = search_cfg["date_posted_days"]
     scrape_limit = search_cfg["daily_limit"]
-    print(f"[Config] Location: {location}")
     greenhouse_boards = [c["greenhouse_board"] for c in config.get("greenhouse_companies", [])]
 
-    raw_jobs = []
-    for scraper in [
-        LinkedInScraper(),
-        GreenhouseScraper(greenhouse_boards),
-    ]:
-        remaining = scrape_limit - len(raw_jobs)
-        if remaining <= 0:
-            print(f"[{scraper.SOURCE}] Skipped — limit of {scrape_limit} reached")
+    # Expand region presets to individual countries
+    search_locations = LOCATION_PRESETS.get(location, [location])
+    print(f"[Config] Location: {location} → {search_locations}")
+
+    raw_jobs: list = []
+    seen_urls: set[str] = set()
+
+    for loc in search_locations:
+        if len(raw_jobs) >= scrape_limit:
             break
-        print(f"[{scraper.SOURCE}] Searching… (need {remaining} more)")
-        try:
-            found = scraper.search(keywords, location, days, limit=remaining)
-            print(f"[{scraper.SOURCE}] {len(found)} jobs found")
-            raw_jobs.extend(found)
-        except Exception as exc:
-            print(f"[{scraper.SOURCE}] Failed: {exc}")
+        for scraper in [LinkedInScraper(), GreenhouseScraper(greenhouse_boards)]:
+            remaining = scrape_limit - len(raw_jobs)
+            if remaining <= 0:
+                break
+            print(f"[{scraper.SOURCE}] Searching '{loc}'… (need {remaining} more)")
+            try:
+                found = scraper.search(keywords, loc, days, limit=remaining)
+                # dedup within this scrape run
+                new = [j for j in found if j.job_url not in seen_urls]
+                seen_urls.update(j.job_url for j in new)
+                raw_jobs.extend(new)
+                print(f"[{scraper.SOURCE}] {len(new)} jobs from '{loc}'")
+            except Exception as exc:
+                print(f"[{scraper.SOURCE}] Failed for '{loc}': {exc}")
 
     # ------------------------------------------------------------------
     # 5. Dedup against cache + existing sheet URLs
