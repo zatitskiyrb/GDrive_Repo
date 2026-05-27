@@ -1,4 +1,4 @@
-/**
+/** v2 — inline keyboard, per-country location presets
  * Cloudflare Workers — Telegram webhook handler for HR Scraper bot.
  *
  * Environment variables (Cloudflare dashboard → Workers → Settings → Variables):
