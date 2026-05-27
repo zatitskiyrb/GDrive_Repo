@@ -9,6 +9,10 @@ jobs:
   scrape:
     runs-on: ubuntu-latest
 
+    env:
+      SCRAPER_DIR: "Practice 4 (HR scraper)/hr_scraper"
+      SA_JSON_FILE: "halogen-chemist-473110-s2-fe15cd3258e4.json"
+
     steps:
       - uses: actions/checkout@v4
 
@@ -31,14 +35,13 @@ jobs:
             beautifulsoup4
 
       - name: Write Google Service Account JSON
-        run: |
-          echo '${{ secrets.GOOGLE_SERVICE_ACCOUNT_JSON }}' \
-            > "Practice 4 (HR scraper)/hr_scraper/halogen-chemist-473110-s2-fe15cd3258e4.json"
+        env:
+          SA_JSON: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_JSON }}
+        run: printenv SA_JSON > "$SCRAPER_DIR/$SA_JSON_FILE"
 
       - name: Run scraper
-        working-directory: "Practice 4 (HR scraper)/hr_scraper"
         env:
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
           GOOGLE_SHEET_ID: ${{ secrets.GOOGLE_SHEET_ID }}
-          GOOGLE_SERVICE_ACCOUNT_JSON: "halogen-chemist-473110-s2-fe15cd3258e4.json"
-        run: python main.py
+          GOOGLE_SERVICE_ACCOUNT_JSON: ${{ env.SA_JSON_FILE }}
+        run: cd "$SCRAPER_DIR" && python main.py
