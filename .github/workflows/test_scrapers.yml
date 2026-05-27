@@ -1,0 +1,71 @@
+name: Test Scrapers (cloud IP check)
+
+on:
+  workflow_dispatch:  # ручной запуск из GitHub UI
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: "Practice 4 (HR scraper)/hr_scraper"
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: pip install python-jobspy httpx
+
+      - name: Test Indeed
+        run: |
+          python - <<'EOF'
+          from jobspy import scrape_jobs
+          df = scrape_jobs(
+              site_name=["indeed"],
+              search_term="AI Transformation Consultant",
+              location="Europe",
+              results_wanted=5,
+              hours_old=72,
+              country_indeed="UK",
+              verbose=0,
+          )
+          if df is None or df.empty:
+              print("Indeed: 0 results")
+          else:
+              print(f"Indeed: {len(df)} results")
+              for _, r in df.iterrows():
+                  print(f"  [{r['title']}] @ {r['company']} | desc: {len(str(r.get('description') or ''))} chars")
+          EOF
+
+      - name: Test LinkedIn
+        run: |
+          python - <<'EOF'
+          from jobspy import scrape_jobs
+          df = scrape_jobs(
+              site_name=["linkedin"],
+              search_term="AI Transformation Consultant",
+              location="Europe",
+              results_wanted=5,
+              hours_old=72,
+              verbose=0,
+          )
+          if df is None or df.empty:
+              print("LinkedIn: 0 results")
+          else:
+              print(f"LinkedIn: {len(df)} results")
+              for _, r in df.iterrows():
+                  print(f"  [{r['title']}] @ {r['company']}")
+          EOF
+
+      - name: Test Greenhouse (Anthropic)
+        run: |
+          python - <<'EOF'
+          import httpx
+          resp = httpx.get("https://boards-api.greenhouse.io/v1/boards/anthropic/jobs", timeout=10)
+          jobs = resp.json().get("jobs", [])
+          print(f"Greenhouse (anthropic): {len(jobs)} total jobs")
+          EOF
