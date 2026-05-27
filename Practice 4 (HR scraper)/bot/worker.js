@@ -73,15 +73,19 @@ export default {
       return new Response("OK");
     }
 
-    if (text === "/start" || text === "/help") {
+    const COMMAND_LOCATIONS = {
+      "/run_europe":         "Europe",
+      "/run_scandinavia":    "Scandinavia",
+      "/run_baltic":         "Baltic",
+      "/run_eastern_europe": "Eastern Europe",
+      "/run_remote":         "Remote",
+    };
+
+    if (text === "/start" || text === "/help" || text === "/run") {
       await sendMessage(env, chatId, "Выбери регион поиска:", false, LOCATION_KEYBOARD);
 
-    } else if (text === "/run") {
-      await sendMessage(env, chatId, "Выбери регион поиска:", false, LOCATION_KEYBOARD);
-
-    } else if (text.startsWith("/run ")) {
-      // Поддержка ручного ввода: /run Baltic
-      const location = text.replace("/run ", "").trim();
+    } else if (COMMAND_LOCATIONS[text]) {
+      const location = COMMAND_LOCATIONS[text];
       await sendMessage(env, chatId,
         `🚀 Запускаю поиск...\n📍 Локация: *${location}*\n\nПришлю результат когда закончу (~5 мин).`, true
       );
@@ -91,7 +95,7 @@ export default {
       }
 
     } else {
-      await sendMessage(env, chatId, "Напиши /run чтобы запустить поиск.");
+      await sendMessage(env, chatId, "Выбери регион:", false, LOCATION_KEYBOARD);
     }
 
     return new Response("OK");
