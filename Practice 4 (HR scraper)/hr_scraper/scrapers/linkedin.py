@@ -1,9 +1,12 @@
 from __future__ import annotations
 
 import time
+from concurrent.futures import ThreadPoolExecutor, TimeoutError as FuturesTimeoutError
 
 from models.schemas import Job
 from scrapers.base import BaseScraper
+
+_REQUEST_TIMEOUT = 30  # seconds per keyword search
 
 
 class LinkedInScraper(BaseScraper):
@@ -20,14 +23,22 @@ class LinkedInScraper(BaseScraper):
                 break
             remaining = limit - len(jobs)
             try:
-                df = scrape_jobs(
-                    site_name=["linkedin"],
-                    search_term=keyword,
-                    location=location,
-                    results_wanted=min(remaining, 5),
-                    hours_old=days * 24,
-                    verbose=0,
-                )
+                with ThreadPoolExecutor(max_workers=1) as executor:
+                    future = executor.submit(
+                        scrape_jobs,
+                        site_name=["linkedin"],
+                        search_term=keyword,
+                        location=location,
+                        results_wanted=min(remaining, 5),
+                        hours_old=days * 24,
+                        verbose=0,
+                    )
+                    try:
+                        df = future.result(timeout=_REQUEST_TIMEOUT)
+                    except FuturesTimeoutError:
+                        print(f"[LinkedIn] Timeout for '{keyword}', skipping")
+                        continue
+
                 if df is not None and not df.empty:
                     for _, row in df.iterrows():
                         if len(jobs) >= limit:
@@ -48,7 +59,7 @@ class LinkedInScraper(BaseScraper):
                             ))
                         except Exception:
                             continue
-                time.sleep(2.0)
+                time.sleep(1.0)
             except Exception as exc:
                 print(f"[LinkedIn] Error searching '{keyword}': {exc}")
 

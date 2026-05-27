@@ -3,11 +3,21 @@ name: HR Scraper
 on:
   schedule:
     - cron: "0 7 * * *"  # 10:00 Helsinki (UTC+3)
-  workflow_dispatch:       # ручной запуск из GitHub UI
+  workflow_dispatch:
+    inputs:
+      location:
+        description: "Search location (e.g. Europe, Scandinavia, Baltic)"
+        default: ""
+        required: false
+      telegram_chat_id:
+        description: "Telegram chat ID to notify on completion"
+        default: ""
+        required: false
 
 jobs:
   scrape:
     runs-on: ubuntu-latest
+    timeout-minutes: 10
 
     env:
       SCRAPER_DIR: "Practice 4 (HR scraper)/hr_scraper"
@@ -44,4 +54,7 @@ jobs:
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
           GOOGLE_SHEET_ID: ${{ secrets.GOOGLE_SHEET_ID }}
           GOOGLE_SERVICE_ACCOUNT_JSON: ${{ env.SA_JSON_FILE }}
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          SEARCH_LOCATION: ${{ github.event.inputs.location }}
+          TELEGRAM_CHAT_ID: ${{ github.event.inputs.telegram_chat_id }}
         run: cd "$SCRAPER_DIR" && python main.py

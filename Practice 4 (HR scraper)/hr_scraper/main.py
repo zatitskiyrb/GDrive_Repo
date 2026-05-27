@@ -67,9 +67,11 @@ def run() -> None:
     from scrapers.linkedin import LinkedInScraper
 
     search_cfg = config["search"]
-    location = search_cfg["location"]
+    # Env var from Telegram bot overrides config.yaml
+    location = os.getenv("SEARCH_LOCATION") or search_cfg["location"]
     days = search_cfg["date_posted_days"]
     scrape_limit = search_cfg["daily_limit"]
+    print(f"[Config] Location: {location}")
     greenhouse_boards = [c["greenhouse_board"] for c in config.get("greenhouse_companies", [])]
 
     raw_jobs = []
@@ -141,6 +143,29 @@ def run() -> None:
     all_scraped_urls = {j.job_url for j in new_jobs}
     save(processed_urls | all_scraped_urls)
     print(f"[Done] Finished. {len(top_jobs)} jobs added to sheet.")
+    _notify_telegram(len(top_jobs), location)
+
+
+def _notify_telegram(jobs_count: int, location: str) -> None:
+    token = os.getenv("TELEGRAM_BOT_TOKEN")
+    chat_id = os.getenv("TELEGRAM_CHAT_ID")
+    if not token or not chat_id:
+        return
+    import httpx
+    text = (
+        f"✅ Поиск завершён!\n"
+        f"📍 Локация: {location}\n"
+        f"💼 Новых вакансий: {jobs_count}\n"
+        f"📊 Открой таблицу: https://docs.google.com/spreadsheets/d/{os.getenv('GOOGLE_SHEET_ID')}"
+    )
+    try:
+        httpx.post(
+            f"https://api.telegram.org/bot{token}/sendMessage",
+            json={"chat_id": chat_id, "text": text},
+            timeout=10,
+        )
+    except Exception:
+        pass
 
 
 def _load_config() -> dict:
