@@ -1,3 +1,6 @@
 name = "hr-scraper-bot"
 main = "worker.js"
 compatibility_date = "2024-01-01"
+
+[vars]
+GITHUB_REPO = "zatitskiyrb/GDrive_Repo"
