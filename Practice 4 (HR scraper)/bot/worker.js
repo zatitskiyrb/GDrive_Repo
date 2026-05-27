@@ -120,6 +120,20 @@ async function triggerActions(env, location, chatId) {
       }),
     }
   );
+
+  if (resp.status !== 204) {
+    const body = await resp.text();
+    // Send error details back to Telegram for debugging
+    await fetch(`https://api.telegram.org/bot${env.TELEGRAM_TOKEN}/sendMessage`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        chat_id: chatId,
+        text: `⚠️ GitHub API: ${resp.status}\n${body}`,
+      }),
+    });
+  }
+
   return resp.status === 204;
 }
 
