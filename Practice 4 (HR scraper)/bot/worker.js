@@ -1,27 +1,28 @@
 /**
  * Cloudflare Workers — Telegram webhook handler for HR Scraper bot.
  *
- * Environment variables (set in Cloudflare dashboard → Workers → Settings → Variables):
+ * Environment variables (Cloudflare dashboard → Workers → Settings → Variables):
  *   TELEGRAM_TOKEN   — bot token from @BotFather
  *   GITHUB_TOKEN     — GitHub Personal Access Token (repo scope)
  *   GITHUB_REPO      — e.g. "zatitskiyrb/GDrive_Repo"
- *   ALLOWED_CHAT_ID  — your personal Telegram chat ID (security: bot responds only to you)
+ *   ALLOWED_CHAT_ID  — your Telegram chat ID (bot ignores everyone else)
  */
 
-const HELP_TEXT = `
-HR Scraper Bot 🤖
-
-Команды:
-/run — запуск с настройками по умолчанию (Europe)
-/run Scandinavia — Швеция, Норвегия, Дания, Финляндия
-/run Baltic — Латвия, Литва, Эстония
-/run Eastern Europe — Польша, Чехия, Венгрия и др.
-/run Europe — вся Европа
-/run Remote — удалённые по всему миру
-
-Результат появится в Google Sheets через ~5 минут,
-и я пришлю уведомление когда закончу.
-`.trim();
+const LOCATION_KEYBOARD = {
+  inline_keyboard: [
+    [
+      { text: "🌍 Europe",         callback_data: "loc:Europe" },
+      { text: "🏔 Scandinavia",    callback_data: "loc:Scandinavia" },
+    ],
+    [
+      { text: "🌊 Baltic",         callback_data: "loc:Baltic" },
+      { text: "🏙 Eastern Europe", callback_data: "loc:Eastern Europe" },
+    ],
+    [
+      { text: "🌐 Remote (world)", callback_data: "loc:Remote" },
+    ],
+  ],
+};
 
 export default {
   async fetch(request, env) {
@@ -36,31 +37,61 @@ export default {
       return new Response("Bad request", { status: 400 });
     }
 
+    // --- Handle inline button press ---
+    if (body?.callback_query) {
+      const cb = body.callback_query;
+      const chatId = String(cb.message.chat.id);
+      const data = cb.data || "";
+
+      if (env.ALLOWED_CHAT_ID && chatId !== env.ALLOWED_CHAT_ID) {
+        await answerCallback(env, cb.id);
+        return new Response("OK");
+      }
+
+      if (data.startsWith("loc:")) {
+        const location = data.replace("loc:", "");
+        await answerCallback(env, cb.id, `Запускаю: ${location}`);
+        await editMessage(env, chatId, cb.message.message_id,
+          `🚀 Запускаю поиск...\n📍 Локация: *${location}*\n\nПришлю результат когда закончу (~5 мин).`
+        );
+        const ok = await triggerActions(env, location, chatId);
+        if (!ok) {
+          await sendMessage(env, chatId, "❌ Не удалось запустить GitHub Actions. Проверь токен.");
+        }
+      }
+      return new Response("OK");
+    }
+
+    // --- Handle text commands ---
     const message = body?.message;
     if (!message) return new Response("OK");
 
     const chatId = String(message.chat.id);
     const text = (message.text || "").trim();
 
-    // Security: only respond to the configured chat
     if (env.ALLOWED_CHAT_ID && chatId !== env.ALLOWED_CHAT_ID) {
       return new Response("OK");
     }
 
     if (text === "/start" || text === "/help") {
-      await sendMessage(env, chatId, HELP_TEXT);
+      await sendMessage(env, chatId, "Выбери регион поиска:", false, LOCATION_KEYBOARD);
 
-    } else if (text.startsWith("/run")) {
-      const location = text.replace("/run", "").trim() || "Europe";
-      await sendMessage(env, chatId, `🚀 Запускаю поиск...\nЛокация: *${location}*\n\nПришлю результат когда закончу (~5 мин).`, true);
+    } else if (text === "/run") {
+      await sendMessage(env, chatId, "Выбери регион поиска:", false, LOCATION_KEYBOARD);
 
+    } else if (text.startsWith("/run ")) {
+      // Поддержка ручного ввода: /run Baltic
+      const location = text.replace("/run ", "").trim();
+      await sendMessage(env, chatId,
+        `🚀 Запускаю поиск...\n📍 Локация: *${location}*\n\nПришлю результат когда закончу (~5 мин).`, true
+      );
       const ok = await triggerActions(env, location, chatId);
       if (!ok) {
         await sendMessage(env, chatId, "❌ Не удалось запустить GitHub Actions. Проверь токен.");
       }
 
     } else {
-      await sendMessage(env, chatId, `Не понимаю команду. Напиши /help`);
+      await sendMessage(env, chatId, "Напиши /run чтобы запустить поиск.");
     }
 
     return new Response("OK");
@@ -81,17 +112,14 @@ async function triggerActions(env, location, chatId) {
       },
       body: JSON.stringify({
         ref: "main",
-        inputs: {
-          location: location,
-          telegram_chat_id: chatId,
-        },
+        inputs: { location, telegram_chat_id: chatId },
       }),
     }
   );
   return resp.status === 204;
 }
 
-async function sendMessage(env, chatId, text, markdown = false) {
+async function sendMessage(env, chatId, text, markdown = false, replyMarkup = null) {
   await fetch(`https://api.telegram.org/bot${env.TELEGRAM_TOKEN}/sendMessage`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
@@ -99,6 +127,28 @@ async function sendMessage(env, chatId, text, markdown = false) {
       chat_id: chatId,
       text,
       ...(markdown ? { parse_mode: "Markdown" } : {}),
+      ...(replyMarkup ? { reply_markup: replyMarkup } : {}),
     }),
+  });
+}
+
+async function editMessage(env, chatId, messageId, text) {
+  await fetch(`https://api.telegram.org/bot${env.TELEGRAM_TOKEN}/editMessageText`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      chat_id: chatId,
+      message_id: messageId,
+      text,
+      parse_mode: "Markdown",
+    }),
+  });
+}
+
+async function answerCallback(env, callbackQueryId, text = "") {
+  await fetch(`https://api.telegram.org/bot${env.TELEGRAM_TOKEN}/answerCallbackQuery`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ callback_query_id: callbackQueryId, text }),
   });
 }
