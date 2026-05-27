@@ -1,0 +1,38 @@
+search:
+  location: "Europe"
+  date_posted_days: 1        # вакансии за последние N дней
+  max_results_per_source: 50 # берём с запасом, топ-30 отбирается по affinity
+  daily_limit: 30            # максимум вакансий в выходном файле
+
+cv:
+  path: "cv.pdf"             # или cv.docx
+
+scoring:
+  model: "claude-haiku-4-5-20251001"
+  min_score: 30              # вакансии ниже этого порога не записываются
+
+default_keywords:
+  - "AI Strategy Consultant"
+  - "AI Transformation Manager"
+  - "AI Transformation Consultant"
+  - "AI Transformation Lead"
+  - "Innovation Facilitator"
+  - "AI Adoption"
+  - "Corporate Venture Builder"
+  - "AI Implementation Lead"
+  - "AI Implementation Consultant"
+  - "AI Acceleration Lead"
+  - "Head of Innovation"
+  - "Proptech AI"
+  - "AI Engagement Manager"
+  - "AI Engagement Lead"
+  - "Partner Success Manager"
+  - "AI Venture Builder"
+  - "Automation Architect"
+
+greenhouse_companies:
+  - greenhouse_board: "anthropic"
+  - greenhouse_board: "grammarly"
+  - greenhouse_board: "notion"
+  # Добавляй компании по их Greenhouse board slug:
+  # boards-api.greenhouse.io/v1/boards/{slug}/jobs

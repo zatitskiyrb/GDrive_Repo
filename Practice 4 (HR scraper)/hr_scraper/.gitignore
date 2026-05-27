@@ -1,0 +1,7 @@
+.env
+credentials/
+data/processed_urls.json
+__pycache__/
+*.pyc
+.venv/
+*.json
