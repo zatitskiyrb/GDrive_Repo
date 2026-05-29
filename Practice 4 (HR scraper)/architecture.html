@@ -32,6 +32,113 @@ h1 {
   max-width: 1100px;
   overflow-x: auto;
 }
+
+/* ── Пояснительная записка ── */
+.explainer {
+  width: 100%;
+  max-width: 1100px;
+  margin-top: 56px;
+}
+.explainer-header {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 1.2px;
+  color: #6e7681;
+  text-transform: uppercase;
+  margin-bottom: 24px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid #21262d;
+}
+.explainer h2 {
+  font-size: 20px;
+  font-weight: 700;
+  color: #f0f6fc;
+  margin-bottom: 8px;
+  letter-spacing: -0.2px;
+}
+.explainer .lead {
+  font-size: 15px;
+  color: #8b949e;
+  margin-bottom: 40px;
+  line-height: 1.6;
+  max-width: 740px;
+}
+.steps {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 16px;
+  margin-bottom: 40px;
+}
+.step {
+  background: #161b22;
+  border: 1px solid #21262d;
+  border-radius: 10px;
+  padding: 20px 22px;
+  display: flex;
+  gap: 16px;
+  align-items: flex-start;
+}
+.step-num {
+  flex-shrink: 0;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: #21262d;
+  color: #8b949e;
+  font-size: 12px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.step-body h3 {
+  font-size: 13px;
+  font-weight: 600;
+  color: #f0f6fc;
+  margin-bottom: 5px;
+}
+.step-body p {
+  font-size: 12px;
+  color: #8b949e;
+  line-height: 1.6;
+}
+.step-body p strong {
+  color: #c9d1d9;
+  font-weight: 500;
+}
+.qa {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-bottom: 40px;
+}
+.qa-item {
+  background: #161b22;
+  border: 1px solid #21262d;
+  border-radius: 10px;
+  padding: 18px 22px;
+}
+.qa-item .q {
+  font-size: 13px;
+  font-weight: 600;
+  color: #58a6ff;
+  margin-bottom: 6px;
+}
+.qa-item .a {
+  font-size: 12px;
+  color: #8b949e;
+  line-height: 1.7;
+}
+.qa-item .a strong {
+  color: #c9d1d9;
+  font-weight: 500;
+}
+.footer-note {
+  font-size: 11px;
+  color: #484f58;
+  text-align: center;
+  margin-top: 8px;
+}
 </style>
 </head>
 <body>
@@ -236,6 +343,137 @@ h1 {
 <text x="926" y="673" font-size="9" fill="#8b949e">Вспомогательный ввод</text>
 
 </svg>
+</div>
+
+<!-- ══════════════════════════════════════════
+     ПОЯСНИТЕЛЬНАЯ ЗАПИСКА
+══════════════════════════════════════════ -->
+<div class="explainer">
+
+  <div class="explainer-header">Пояснительная записка</div>
+
+  <h2>Что это такое и зачем?</h2>
+  <p class="lead">
+    HR Scraper — это личный ИИ-ассистент по поиску работы. Каждый день он самостоятельно
+    просматривает тысячи вакансий на LinkedIn и в базах компаний, сравнивает каждую из них
+    с вашим резюме и кладёт в таблицу только те, которые действительно подходят.
+    Никакого ручного поиска — вы просто открываете таблицу и видите готовый список.
+  </p>
+
+  <div class="steps">
+
+    <div class="step">
+      <div class="step-num">1</div>
+      <div class="step-body">
+        <h3>Вы выбираете регион в Telegram</h3>
+        <p>Открываете бота, нажимаете одну кнопку — «Скандинавия», «Балтика», «Восточная Европа» и т.д.
+        Больше ничего делать не нужно. Бот принимает команду и запускает весь процесс.</p>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">2</div>
+      <div class="step-body">
+        <h3>Облачный сервер начинает поиск</h3>
+        <p>В облаке автоматически запускается компьютер (сервер GitHub). Он заходит на LinkedIn
+        и в базы вакансий конкретных компаний и собирает все свежие объявления за последние сутки
+        по заданному региону.</p>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">3</div>
+      <div class="step-body">
+        <h3>Дубли отсеиваются автоматически</h3>
+        <p>Система помнит все вакансии, которые уже показывала раньше. Повторные объявления
+        отфильтровываются — в таблицу попадает только то, чего вы ещё не видели.</p>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">4</div>
+      <div class="step-body">
+        <h3>ИИ читает вакансии и резюме</h3>
+        <p>Каждую новую вакансию нейросеть (<strong>Claude от Anthropic</strong>) сравнивает
+        с вашим резюме. Она выставляет оценку от 0 до 100 и объясняет: что совпадает,
+        чего не хватает. Вакансии с низкой оценкой отбрасываются.</p>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">5</div>
+      <div class="step-body">
+        <h3>Лучшие вакансии — в таблицу</h3>
+        <p>Топ-30 вакансий с наивысшими оценками записываются в <strong>Google Таблицу</strong>:
+        название, компания, ссылка, оценка ИИ, причины совпадения. Компании учитываются отдельно
+        — видно, сколько раз каждая из них размещала похожие вакансии.</p>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">6</div>
+      <div class="step-body">
+        <h3>Вы получаете уведомление</h3>
+        <p>Когда поиск завершён (~5 минут), бот присылает сообщение: сколько новых вакансий найдено
+        и прямую ссылку на таблицу. Можно открыть и сразу приступить к откликам.</p>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Q&A -->
+  <div class="explainer-header" style="margin-top:0">Частые вопросы</div>
+
+  <div class="qa">
+
+    <div class="qa-item">
+      <div class="q">Нужно ли держать компьютер включённым?</div>
+      <div class="a">Нет. Всё работает в облаке — на серверах GitHub и Cloudflare. Ваш Mac вообще не
+      участвует в процессе. Бот работает, даже если телефон выключен.</div>
+    </div>
+
+    <div class="qa-item">
+      <div class="q">Что такое «ключевые слова» в таблице?</div>
+      <div class="a">Это список поисковых запросов, по которым система ищет вакансии — например,
+      «AI Transformation», «Change Management», «Learning & Development». Вы можете редактировать
+      этот список прямо в таблице на вкладке <strong>Keywords</strong> — и следующий поиск
+      уже учтёт изменения.</div>
+    </div>
+
+    <div class="qa-item">
+      <div class="q">Как часто запускается поиск автоматически?</div>
+      <div class="a">Каждый день в <strong>10:00 по Хельсинки</strong> система сама запускает поиск
+      по региону «Европа» — без каких-либо действий с вашей стороны. Telegram-бот нужен,
+      если хотите запустить поиск вручную или сменить регион.</div>
+    </div>
+
+    <div class="qa-item">
+      <div class="q">Как ИИ оценивает вакансию?</div>
+      <div class="a">Нейросеть получает текст вашего резюме и описание вакансии, после чего выдаёт
+      оценку совпадения от 0 до 100. Оценка выше 70 — сильное совпадение, 40–70 — частичное,
+      ниже 30 — вакансия отбрасывается и в таблицу не попадает вовсе. Вместе с оценкой
+      указываются конкретные причины: почему подходит и чего не хватает.</div>
+    </div>
+
+    <div class="qa-item">
+      <div class="q">Что происходит с данными? Это безопасно?</div>
+      <div class="a">Резюме и вакансии обрабатываются API Anthropic (США) — так же, как при использовании
+      Claude.ai. Результаты хранятся только в вашей личной Google Таблице. Никакие данные
+      не сохраняются на сторонних серверах.</div>
+    </div>
+
+    <div class="qa-item">
+      <div class="q">Сколько это стоит?</div>
+      <div class="a">Все сервисы работают на <strong>бесплатных тарифах</strong>: GitHub Actions
+      (2000 мин/мес бесплатно — используется ~7%), Cloudflare Workers (100 000 запросов/день бесплатно),
+      Google Sheets (бесплатно). Единственная платная часть — Claude API: при ежедневном запуске
+      это несколько центов в месяц.</div>
+    </div>
+
+  </div>
+
+  <p class="footer-note">HR Scraper · Cloudflare Workers + GitHub Actions + Anthropic Claude · 2025</p>
+
 </div>
 
 </body>
