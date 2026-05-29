@@ -56,5 +56,5 @@ jobs:
           GOOGLE_SERVICE_ACCOUNT_JSON: ${{ env.SA_JSON_FILE }}
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           SEARCH_LOCATION: ${{ github.event.inputs.location }}
-          TELEGRAM_CHAT_ID: ${{ github.event.inputs.telegram_chat_id }}
+          TELEGRAM_CHAT_ID: ${{ github.event.inputs.telegram_chat_id || secrets.TELEGRAM_CHAT_ID }}
         run: cd "$SCRAPER_DIR" && python main.py
