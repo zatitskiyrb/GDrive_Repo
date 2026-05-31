@@ -1,8 +1,6 @@
 name: HR Scraper
 
 on:
-  schedule:
-    - cron: "0 7 * * *"  # 10:00 Helsinki (UTC+3)
   workflow_dispatch:
     inputs:
       location:
